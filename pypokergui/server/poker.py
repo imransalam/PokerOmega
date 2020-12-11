@@ -85,7 +85,7 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
             
             global_game_manager = GM.GameManager()
             tornado.options.parse_command_line()
-            with open(options.config, "rb") as f:
+            with open('config.yaml', "rb") as f:
                 config = yaml.load(f)
             setup_config(config)
             print("Is playing poker after Config", global_game_manager.is_playing_poker)
