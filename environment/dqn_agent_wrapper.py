@@ -21,6 +21,11 @@ class DQNAgentWrapper(BasePokerPlayer):
             self.bb_amount = game_state['small_blind_amount'] * 2
 
         features = self.agent.make_features(valid_actions, hole_cards, game_state)
+        print('-'*100)
+        print(features)
+        print(len(features))
+        print('-'*100)
+        features = features[:134]
         actions = self.agent.act(features)
         # print(actions)
         action_str, chosen_action, amount = None, None, 0

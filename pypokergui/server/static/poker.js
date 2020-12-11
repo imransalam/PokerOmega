@@ -33,9 +33,18 @@ function registerPlayer(form) {
  * game is starged.
  */
 function startGame() {
+    console.log("Start Game")
     message = {}
     message['type'] = "action_start_game"
     updater.socket.send(JSON.stringify(message));
+}
+
+function restartGame() {
+    console.log("Restart Game")
+    message = {}
+    message['type'] = "action_restart_game"
+    updater.socket.send(JSON.stringify(message));
+    location.reload()
 }
 
 /*
@@ -43,6 +52,7 @@ function startGame() {
  * human player declared his action in the game.
  */
 function declareAction(form) {
+  console.log("Declare Action")
   var message = form.formToDict();
   message['type'] = "action_declare_action"
   updater.socket.send(JSON.stringify(message))
@@ -82,6 +92,8 @@ var updater = {
               updater.updateConfig(message)
             } else if ('start_game' == message['message_type']) {
               updater.startGame(message)
+            }else if ('restart_game' == message['message_type']) {
+              updater.restartGame(message)
             } else if ('update_game' == message['message_type']) {
               updater.updateGame(message)
             } else if ('alert_restart_server' == message['message_type']) {
@@ -116,6 +128,28 @@ var updater = {
         declareAction($(this));
         return false;
       });
+      $("#start_game_form").on("submit", function() {
+          startGame()
+          return false;
+      });
+      $("#restart_game_form").on("submit", function() {
+          restartGame()
+          return false;
+      });
+    },
+
+
+
+    restartGame: function(message) {
+      // var node = $(message.html)
+      // $("#container").html(node)
+      // $("#declare_action_form").hide()
+      // $("#declare_action_form").on("submit", function() {
+      //   declareAction($(this));
+      //   return false;
+      // });
+      console.log("Reached the RESTART function")
+      location.reload()
     },
 
     /*

@@ -216,5 +216,4 @@ for e in range(N_EPISODES):
         print("This episode took " + str(np.round(timer() - timerStart, 4)) + " seconds to run")
 
 
-if args.output_filename:
-    agents[0].save(args.output_filename + '.h5')
+agents[0].save("model" + '.h5')

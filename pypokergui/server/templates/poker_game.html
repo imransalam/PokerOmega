@@ -55,7 +55,17 @@
         </table>
         -->
       </form>
+      
     </div>
+      <form action="/a/start_game" method="post" id="restart_game_form">
+        <div class="form-group"><!-- need this element for margin --></div>
+            <input type="submit" value="{{ _("Restart Poker") }}" class="btn btn-success">
+            <input type="hidden" name="next" value="{{ request.path }}">
+        {% module xsrf_form_html() %}
+      </form>
+
+
     <div></div> <!-- for creating space -->
   </div>
 </div>
+

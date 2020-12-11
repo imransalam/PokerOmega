@@ -17,6 +17,8 @@ class GameManager(object):
     def define_rule(self, max_round, initial_stack, small_blind, ante, blind_structure):
         self.rule = Engine.gen_game_config(max_round, initial_stack, small_blind, ante, blind_structure)
 
+
+
     def join_ai_player(self, name, setup_script_path, model_path):
         ai_uuid = str(len(self.members_info))
         self.members_info.append(gen_ai_player_info(name, ai_uuid, setup_script_path, model_path))
@@ -46,6 +48,19 @@ class GameManager(object):
         self.next_player_uuid = fetch_next_player_uuid(self.latest_messages)
         self.hand_info = []
         self.hand_info_uuids = []
+
+    def stop_game(self):
+        uuid_list = None
+        name_list = None
+        players_info = None
+        self.ai_players = None
+        self.engine = None
+        self.latest_messages = None
+        self.is_playing_poker = False
+        self.next_player_uuid = None
+        self.hand_info = None
+        self.hand_info_uuids = None
+
 
     def update_game(self, action, amount):
         assert len(self.latest_messages) != 0  # check that start_game has already called

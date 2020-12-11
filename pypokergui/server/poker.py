@@ -22,6 +22,8 @@ define("port", default=8888, help="run on the given port", type=int)
 define("config", default=None, help="path to game config", type=str)
 define("speed", default="moderate", help="how fast game progress", type=str)
 
+
+
 class Application(tornado.web.Application):
 
     def __init__(self):
@@ -61,6 +63,7 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
             MM.broadcast_config_update(self, global_game_manager, self.sockets)
 
     def on_message(self, message):
+        global global_game_manager
         js = tornado.escape.json_decode(message)
         message_type = js['type']
         if 'action_new_member' == message_type:
@@ -75,6 +78,19 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
                 MM.broadcast_update_game(self, global_game_manager, self.sockets, MODE_SPEED)
                 if self._is_next_player_ai(global_game_manager):
                     self._progress_the_game_till_human()
+        elif 'action_restart_game' == message_type:
+            print("ACTION RESTART GAME")
+            global_game_manager.stop_game()
+            print("Is playing poker", global_game_manager.is_playing_poker)
+            
+            global_game_manager = GM.GameManager()
+            tornado.options.parse_command_line()
+            with open(options.config, "rb") as f:
+                config = yaml.load(f)
+            setup_config(config)
+            print("Is playing poker after Config", global_game_manager.is_playing_poker)
+            # tornado.options.parse_command_line()
+            # start_server(options.config, options.port, options.speed)
         elif 'action_declare_action' == message_type:
             if self.uuid == global_game_manager.next_player_uuid:
                 action, amount = self._correct_action(js)
@@ -147,4 +163,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
