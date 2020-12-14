@@ -216,4 +216,4 @@ for e in range(N_EPISODES):
         print("This episode took " + str(np.round(timer() - timerStart, 4)) + " seconds to run")
 
 
-agents[0].save("model" + '.h5')
+    agents[0].save("model_" + str(e) + '.h5')
