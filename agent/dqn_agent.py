@@ -174,7 +174,7 @@ class DQNAgent:
 
         feature_arrays = [hole_values, hole_suits, river_values, river_suits, total_pot_as_bb,
                 own_stack_size, other_players_stack_sizes, player_folds, money_since_our_last_move,
-                amt_to_call, min_raise, max_raise]
+                amt_to_call, min_raise, max_raise, min_raise, max_raise, min_raise, max_raise]
 
         ret = None
 
