@@ -1,14 +1,19 @@
 <div class="col-xs-2 player-{{"active" if player["state"]=="participating" else "folded"}}">
   <i class="material-icons md-48
-    {{"inactive" if player["state"]=="folded" else ""}} 
+    {{"inactive" if player["state"]=="folded" else ""}}
     {{"color-ai" if len(player["uuid"]) <= 2 else "color-human"}}">
     {{ 'android' if len(player["uuid"]) <= 2 else 'face' }}
   </i>
   <div>
-    <span class="round-state-table-text player-name">{{player["name"]}}</span></br>
-    <span class="round-state-table-text player-stack">${{player["stack"]}}</span></br>
+    {% if round_state['seats'][round_state['next_player']]['name'] == player["name"] %}
+    <span class="round-state-table-text player-name label label-success">{{player["name"]}}</span></br>
+    <span class="round-state-table-text player-stack label label-success">${{player["stack"]}}</span></br>
+    {% else %}
+    <span class="round-state-table-text player-name label ">{{player["name"]}}</span></br>
+    <span class="round-state-table-text player-stack label">${{player["stack"]}}</span></br>
+    {% end %}
     {% if round_state["dealer_btn"]==idx %}
-      <span class="label label-warning">D</span>
+      <span class="label label-warning">Dealer</span>
     {% end %}
     <!--
     {% if round_state["next_player"]==idx %}
