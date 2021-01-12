@@ -45,6 +45,10 @@ body {
   width: 63px;
 }
 
+.card-show {
+  width: 60px;
+}
+
 .card-small {
   width: 20%
 }

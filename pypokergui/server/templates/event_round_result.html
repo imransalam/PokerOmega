@@ -10,8 +10,7 @@
       <tr>
         <th>player</td>
         <th>hand</th>
-        <th>hole-high</th>
-        <th>hole-low</th>
+        <th>Cards</th>
       </tr>
     </thead>
     <tbody>
@@ -21,8 +20,10 @@
           {{ [player['name'] for player in round_state['seats'] if player['uuid']==hand['uuid']][0] }}
         </td>
         <td>{{ hand['hand']['hand']['strength'] }}</td>
-        <td>{{ hand['hand']['hole']['high'] }}</td>
-        <td>{{ hand['hand']['hole']['low'] }}</td>
+        <td>
+          <img class="card-show" width="50" src="{{ static_url("images/card_%s.png" % hand['hand']['hole']['low']) }}" >
+          <img class="card-show" width="50" src="{{ static_url("images/card_%s.png" % hand['hand']['hole']['high']) }}" >
+        </td>
       </tr>
       {% end %}
     </tbody>
