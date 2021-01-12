@@ -42,7 +42,11 @@ body {
 */
 
 .card {
-  width: 15%
+  width: 63px;
+}
+
+.card-show {
+  width: 60px;
 }
 
 .card-small {
@@ -51,6 +55,16 @@ body {
 
 .pot {
   width: 10%
+}
+
+#pot {
+  border: 1px ridge #035904;
+  border-radius: 10px;
+  background: radial-gradient(circle, #263426 47%, #022303 100%);
+  /* height: 100%; */
+  margin: 15px 0px;
+  padding-top: 5px;
+  width: 60px;
 }
 
 .info-box {
@@ -65,13 +79,26 @@ body {
 
 #round-state-table {
   margin-top: 30px;
+  height: 450px;
   padding: 10px;
-  background-color: #2E7D32;
+  background-image: url("./images/poker-table-2.png"), radial-gradient(circle, rgba(78,80,84,1) 0%, rgba(46,45,46,1) 100%);
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#seats-lower, #seats-upper {
+  height: 125px;
+}
+
+#community_card_row {
+  height: 100px;
+  margin: 50px 0px;
 }
 
 .round-state-table-text {
   color: #ffffff;
 }
+
 
 
 /*
@@ -95,9 +122,9 @@ body {
 .material-icons.color-human.dark.inactive { color: #212121; }
 
 .material-icons.orange600 { color: #FB8C00; }
- 
+
 .material-icons.md-dark { color: rgba(0, 0, 0, 1.0); }
 .material-icons.md-dark.md-inactive { color: rgba(0, 0, 0, 0.26); }
- 
+
 .material-icons.md-light { color: rgba(255, 255, 255, 1); }
 .material-icons.md-light.md-inactive { color: rgba(255, 255, 255, 0.3); }

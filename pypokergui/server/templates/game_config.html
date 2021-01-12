@@ -31,12 +31,31 @@
           <tr>
             <th>player type</th>
             <th>player name</th>
+            <th>Action</th>
           <tr>
         </thead>
         <tbody>
             {% for player in config.members_info %}
               {% include "player.html" %}
             {% end %}
+            <tr>
+              <form action="/a/register" method="post" id="registration_form" class="form-inline">
+                <td>
+                  <select name="player_type" class="form-control" id="player_type_select">
+                    <option value="ai">ai</option>
+                    <option value="human">human</option>
+                  </select>
+                </td>
+                <td>
+                  <input name="body" id="message" class="form-control" placeholder="Enter your name">
+                </td>
+                <td>
+                  <input type="submit" value="{{ _("Register") }}"}} class="btn btn-primary">
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  {% module xsrf_form_html() %}
+                </td>
+              </form>
+            </tr>
         </tbody>
       </table>
     </div>
