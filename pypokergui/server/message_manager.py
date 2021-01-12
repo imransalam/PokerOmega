@@ -137,8 +137,12 @@ def _gen_game_update_message(handler, message, game_manager):
         hand_info = message['message']['hand_info']
         print(hand_info)
         for i, hand in enumerate(hand_info):
-            game_manager_hand_index = game_manager.hand_info_uuids.index(hand['uuid'])
-            hand_info[i]['hand']['hole'] = game_manager.hand_info[game_manager_hand_index]['hand']['hole']
+            try:
+                game_manager_hand_index = game_manager.hand_info_uuids.index(hand['uuid'])
+                hand_info[i]['hand']['hole'] = game_manager.hand_info[game_manager_hand_index]['hand']['hole']
+            except ValueError:
+                print(ValueError)
+
         print(hand_info)
         winners = message['message']['winners']
         round_count = message['message']['round_count']
