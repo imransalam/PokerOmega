@@ -77,9 +77,11 @@ def broadcast_update_game(handler, game_manager, sockets, mode="moderate"):
             if len(str(uuid)) <= 2:
                 ai_player = game_manager.ai_players[uuid]
                 _broadcast_message_to_ai(ai_player, update)
+                if "hole_card" in update['message']:
+                    print(update['message']['hole_card'])
             else:
                 socket = _find_socket_by_uuid(sockets, uuid)
-                message = _gen_game_update_message(handler, update)
+                message = _gen_game_update_message(handler, update, game_manager)
                 try:
                     socket.write_message(message)
                 except:
@@ -97,7 +99,7 @@ def _find_socket_by_uuid(sockets, uuid):
     assert len(target) == 1
     return target[0]
 
-def _gen_game_update_message(handler, message):
+def _gen_game_update_message(handler, message, game_manager):
     message_type = message['message']['message_type']
     if 'round_start_message' == message_type:
         round_count = message['message']['round_count']
@@ -133,6 +135,10 @@ def _gen_game_update_message(handler, message):
     elif 'round_result_message' == message_type:
         round_state = message['message']['round_state']
         hand_info = message['message']['hand_info']
+        print(hand_info)
+        for i, hand in enumerate(hand_info):
+            game_manager_hand_index = game_manager.hand_info_uuids.index(hand['uuid'])
+            hand_info[i]['hand']['hole'] = game_manager.hand_info[game_manager_hand_index]['hand']['hole']
         print(hand_info)
         winners = message['message']['winners']
         round_count = message['message']['round_count']

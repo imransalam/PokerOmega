@@ -23,6 +23,9 @@ class GameManager(object):
         ai_uuid = str(len(self.members_info))
         self.members_info.append(gen_ai_player_info(name, ai_uuid, setup_script_path, model_path))
 
+    def join_ai_player_front_end(self, name, uuid, setup_script_path, model_path):
+            self.members_info.append(gen_ai_player_info(name, uuid, setup_script_path, model_path))
+
     def join_human_player(self, name, uuid):
         self.members_info.append(gen_human_player_info(name, uuid))
 
@@ -73,13 +76,15 @@ class GameManager(object):
         ask_uuid, ask_message = self.latest_messages[-1]
         assert ask_message['type'] == 'ask' and uuid == ask_uuid
         hole_cards = ask_message['message']['hole_card']
+        print('---------' + str(hole_cards) + '----------------')
         if uuid not in self.hand_info_uuids:
             self.hand_info.append({'uuid': uuid,
                                    'hand': {'strength': None,
                                             'hole': {'high': hole_cards[0],
                                                      'low': hole_cards[1]}}})
-            self.hand_info_uuids.append(uuid)
 
+            self.hand_info_uuids.append(uuid)
+        print('=====================' + str(self.hand_info) + '=====================')
         action = ai_player.declare_action(
                 ask_message['message']['valid_actions'],
                 ask_message['message']['hole_card'],

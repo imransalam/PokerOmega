@@ -67,7 +67,13 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
         js = tornado.escape.json_decode(message)
         message_type = js['type']
         if 'action_new_member' == message_type:
-            global_game_manager.join_human_player(js['name'], self.uuid)
+            player_type = js['player_type']
+            if player_type == 'human':
+                print('HUMAN_JOINED')
+                global_game_manager.join_human_player(js['name'], self.uuid)
+            else:
+                print('AI_JOINED')
+                global_game_manager.join_ai_player(js['name'], './setup_gui_ai.py', '../model.h5')
             MM.broadcast_config_update(self, global_game_manager, self.sockets)
         elif 'action_start_game' == message_type:
             if global_game_manager.is_playing_poker:
