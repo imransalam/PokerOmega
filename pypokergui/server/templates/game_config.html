@@ -9,16 +9,35 @@
                 <th>initial stack</th>
                 <th>small blind</th>
                 <th>ante</th>
-              <tr>
+                <th>number of AI players</th>
+                <th>action</th>
+              </tr>
             </thead>
+
+            <form action="/a/config" method="post" id="config_form" class="form-inline">
             <tbody>
               <tr>
-                <td>{{ config.rule['max_round'] }}</td>
-                <td>{{ config.rule['initial_stack'] }}</td>
-                <td>{{ config.rule['small_blind'] }}</td>
-                <td>{{ config.rule['ante'] }}</td>
+                <td>
+                    <input type="number" name="max_round" value="{{ config.rule['max_round'] }}" id="max_round" class="form-control" placeholder="Max Rounds">
+                </td>
+                <td>
+                    <input type="number" name="initial_stack" value="{{ config.rule['initial_stack'] }}" id="initial_stack" class="form-control" placeholder="Initial Stack">
+                </td>
+                <td>
+                    <input type="number" name="small_blind" value="{{ config.rule['small_blind'] }}" id="small_blind" class="form-control" placeholder="Small Blind">
+                </td>
+                <td>
+                    <input type="number" name="ante" value="{{ config.rule['ante'] }}" id="ante" class="form-control" placeholder="Ante">
+                </td>
+                <td>
+                    <input type="number" name="ai_players" value="{{ 1 }}" id="ai_players" class="form-control" placeholder="AI players">
+                </td>
+                <td>
+                    <input id="config_form_submit" type="submit" value="{{ _("update") }}"}} class="btn btn-primary">
+                </td>
               </tr>
             </tbody>
+            </form>
           </table>
         </div>
       </div>
@@ -47,18 +66,14 @@
                   </select>
                 </td>
                 <td>
-                  <input name="body" id="message" class="form-control" placeholder="Enter your name">
+                  <input name="body" id="player_name" class="form-control" placeholder="Enter your name">
                 </td>
                 <td>
-                  <input type="submit" value="{{ _("Register") }}"}} class="btn btn-primary">
-                  <input type="hidden" name="next" value="{{ request.path }}">
-                  {% module xsrf_form_html() %}
+                  <input id="registration_form_submit" type="submit" value="{{ _("Register") }}" class="btn btn-primary">
                 </td>
               </form>
             </tr>
         </tbody>
       </table>
     </div>
-    <ul>
-    </ul>
   </div>

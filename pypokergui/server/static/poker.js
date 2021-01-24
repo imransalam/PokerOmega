@@ -5,45 +5,95 @@ $(document).ready(function() {
     if (!window.console) window.console = {};
     if (!window.console.log) window.console.log = function() {};
 
-    $("#registration_form").on("submit", function() {
-        registerPlayer($(this));
-        return false;
+    $(document).on('click', "#config_form_submit", function(e) {
+       updateConfig();
+        e.preventDefault();
+    });
+
+    $(document).on('click', "#registration_form_submit", function(e) {
+        registerPlayer();
+        e.preventDefault();
     });
     $("#start_game_form").on("submit", function() {
         startGame()
         return false;
     });
-    updater.start();
+    //
+    // const updater2 = { ...updater};
+    // updater1
 });
+
+function callbackClosureWithArgument(i, callback) {
+  return function(event) {
+    return callback(i, event);
+  }
+}
+
+function callbackClosure(i, j, callback) {
+  return function() {
+    return callback(i, j);
+  }
+}
+
+let delay = ms => new Promise(r => setTimeout(r, ms));
 
 /*
  *  Callback function invoked when
  *  human player is registered.
  */
-function registerPlayer(form) {
-    var message = form.formToDict();
+async function registerPlayer() {
+    var message = $('#registration_form').formToDict();
     message['type'] = "action_new_member"
-    message['name'] = message['body']
+    message['name'] = $('#player_name').val();
+    message['player_type'] = $('#player_type_select').val();
     delete message.body
-    updater.socket.send(JSON.stringify(message));
+    updater.start(message['name']);
+    while (updater.sockets[updater.sockets.length - 1].readyState === 0) {
+        await delay(1000 * 1)
+    }
+    updater.sockets[updater.sockets.length - 1].send(JSON.stringify(message));
+}
+
+/*
+ *  Callback function invoked when
+ *  config is updated.
+ */
+function updateConfig() {
+    var message = $("#config_form").formToDict();
+    message['type'] = "update_config"
+    message['max_round'] = $("#max_round").val()
+    message['initial_stack'] = $("#initial_stack").val()
+    message['small_blind'] = $("#small_blind").val()
+    message['ante'] = $("#ante").val()
+    message['ai_players'] = $("#ai_players").val()
+
+    if (!updater.sockets[0]) {
+        alert('Add one human player to update rules.')
+        return ;
+    }
+    updater.sockets[0].send(JSON.stringify(message));
 }
 
 /*
  * Callback function invoked when
  * game is starged.
  */
-function startGame() {
+async function startGame() {
     console.log("Start Game")
     message = {}
     message['type'] = "action_start_game"
-    updater.socket.send(JSON.stringify(message));
+    if (!updater.sockets[0]) {
+        alert('No Human Player is added');
+        return ;
+    }
+    updater.sockets[0].send(JSON.stringify(message));
 }
 
 function restartGame() {
     console.log("Restart Game")
     message = {}
     message['type'] = "action_restart_game"
-    updater.socket.send(JSON.stringify(message));
+    updater.sockets[1].send(JSON.stringify(message));
     location.reload()
 }
 
@@ -51,11 +101,15 @@ function restartGame() {
  * Callback function invoked when
  * human player declared his action in the game.
  */
-function declareAction(form) {
+const declareAction = (form, socket, socketNumber) => {
+    debugger;
   console.log("Declare Action")
   var message = form.formToDict();
-  message['type'] = "action_declare_action"
-  updater.socket.send(JSON.stringify(message))
+  message['type'] = "action_declare_action";
+  let nextPlayer = $('#next_player_span').text().trim();
+
+    console.log(updater.nameToSocketMap[nextPlayer])
+  updater.sockets[updater.nameToSocketMap[nextPlayer]].send(JSON.stringify(message))
 }
 
 /*
@@ -75,33 +129,38 @@ jQuery.fn.formToDict = function() {
  *  This object setups and holds websocket.
  */
 var updater = {
-    socket: null,
+    sockets: [],
+    lastTurn: 0,
+    nameToSocketMap: {},
 
     /*
      *  This method is invoked when index page is opened.
      *  Setup websocket and register callback method on it.
      *  URL would be "ws://localhost/pokersocket:8888".
      */
-    start: function() {
-        var url = "ws://" + location.host + "/pokersocket";
-        updater.socket = new WebSocket(url);
-        updater.socket.onmessage = function(event) {
-            window.console.log("received new message: " + event.data)
-            message = JSON.parse(event.data)
-            if ('config_update' == message['message_type']) {
-              updater.updateConfig(message)
-            } else if ('start_game' == message['message_type']) {
-              updater.startGame(message)
-            }else if ('restart_game' == message['message_type']) {
-              updater.restartGame(message)
-            } else if ('update_game' == message['message_type']) {
-              updater.updateGame(message)
-            } else if ('alert_restart_server' == message['message_type']) {
-              updater.alert_restart_server(message)
-            } else {
-              window.console.error("received unexpected message: " + message)
+    start: function(player) {
+            let url = "ws://" + location.host + "/pokersocket";
+            let socketNumber = updater.sockets.length;
+            updater.sockets[socketNumber] = new WebSocket(url);
+
+            updater.nameToSocketMap = { ...updater.nameToSocketMap, [player]: socketNumber }
+
+            updater.sockets[socketNumber].onmessage = (event) => {
+                message = JSON.parse(event.data)
+                if ('config_update' == message['message_type']) {
+                    updater.updateConfig(message)
+                } else if ('start_game' == message['message_type']) {
+                    updater.startGame(message, event.target, socketNumber);
+                } else if ('restart_game' == message['message_type']) {
+                    updater.restartGame(message)
+                } else if ('update_game' == message['message_type']) {
+                    updater.updateGame(message)
+                } else if ('alert_restart_server' == message['message_type']) {
+                    updater.alert_restart_server(message)
+                } else {
+                    window.console.error("received unexpected message: " + message)
+                }
             }
-        }
     },
 
     /*
@@ -120,12 +179,12 @@ var updater = {
      * Invoked when received the message
      * about start of the game.
      */
-    startGame: function(message) {
-      var node = $(message.html)
+    startGame: (message, socket, socketNumber) => {
+      var node = $(message.html);
       $("#container").html(node)
       $("#declare_action_form").hide()
-      $("#declare_action_form").on("submit", function() {
-        declareAction($(this));
+      $("#declare_action_form").on("submit", () => {
+        declareAction($("#declare_action_form"), socket, socketNumber);
         return false;
       });
       $("#start_game_form").on("submit", function() {

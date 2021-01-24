@@ -6,7 +6,7 @@
   </i>
   <div>
     {% if round_state['seats'][round_state['next_player']]['name'] == player["name"] %}
-    <span class="round-state-table-text player-name label label-success">{{player["name"]}}</span></br>
+    <span id="next_player_span" class="round-state-table-text player-name label label-success">{{player["name"]}}</span></br>
     <span class="round-state-table-text player-stack label label-success">${{player["stack"]}}</span></br>
     {% else %}
     <span class="round-state-table-text player-name label ">{{player["name"]}}</span></br>
