@@ -5,7 +5,7 @@
     {{ 'android' if len(player["uuid"]) <= 2 else 'face' }}
   </i>
   <div>
-    {% if round_state['seats'][round_state['next_player']]['name'] == player["name"] %}
+    {% if str(round_state['next_player']).isdigit() and round_state['seats'][int(round_state['next_player'])]['name'] == player["name"] %}
     <span id="next_player_span" class="round-state-table-text player-name label label-success">{{player["name"]}}</span></br>
     <span class="round-state-table-text player-stack label label-success">${{player["stack"]}}</span></br>
     {% else %}

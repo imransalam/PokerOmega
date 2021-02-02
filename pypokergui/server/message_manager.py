@@ -113,6 +113,10 @@ def _gen_game_update_message(handler, message, game_manager):
     elif 'street_start_message' == message_type:
         round_state = message['message']['round_state']
         street = message['message']['street']
+        # if str(round_state['next_player']).isdigit():
+        #     table_html_str = handler.render_string("round_state.html", round_state=round_state)
+        # else:
+        #     round_state['next_player'] = 0
         table_html_str = handler.render_string("round_state.html", round_state=round_state)
         event_html_str = handler.render_string("event_street_start.html", street=street)
         content = {
