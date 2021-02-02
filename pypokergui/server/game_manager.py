@@ -26,8 +26,8 @@ class GameManager(object):
     def join_ai_player_front_end(self, name, uuid, setup_script_path, model_path):
             self.members_info.append(gen_ai_player_info(name, uuid, setup_script_path, model_path))
 
-    def join_human_player(self, name, uuid):
-        self.members_info.append(gen_human_player_info(name, uuid))
+    def join_human_player(self, name, uuid, isDealer=False):
+        self.members_info.append(gen_human_player_info(name, uuid, isDealer))
 
     def get_human_player_info(self, uuid):
         for info in self.members_info:
@@ -122,18 +122,19 @@ def _build_ai_player(setup_script_path, model_path):
     return setup_method(model_path)
 
 def gen_ai_player_info(name, uuid, setup_script_path, model_path):
-    info = _gen_base_player_info("ai", name, uuid)
+    info = _gen_base_player_info("ai", name, uuid, False)
     info["setup_script_path"] = setup_script_path
     info["model_path"] = model_path
     return info
 
-def gen_human_player_info(name, uuid):
-    return _gen_base_player_info("human", name, uuid)
+def gen_human_player_info(name, uuid, isDealer):
+    return _gen_base_player_info("human", name, uuid, isDealer)
 
-def _gen_base_player_info(player_type, name, uuid):
+def _gen_base_player_info(player_type, name, uuid, isDealer):
     return {
             "type": player_type,
             "name": name,
-            "uuid": uuid
+            "uuid": uuid,
+            "isDealer": isDealer
             }
 

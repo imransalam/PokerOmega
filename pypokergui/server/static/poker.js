@@ -14,6 +14,12 @@ $(document).ready(function() {
         registerPlayer();
         e.preventDefault();
     });
+
+    $(document).on('click', "#assign_as_dealer", function(e){
+        assignDealer();
+        e.preventDefault();
+    });
+
     $("#start_game_form").on("submit", function() {
         startGame()
         return false;
@@ -36,6 +42,14 @@ function callbackClosure(i, j, callback) {
 }
 
 let delay = ms => new Promise(r => setTimeout(r, ms));
+
+/*
+ *  Callback function invoked when
+ *  player is assigned as a dealer.
+ */
+async function assignDealer(){
+
+}
 
 /*
  *  Callback function invoked when
