@@ -76,13 +76,14 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
                 global_game_manager.join_ai_player(js['name'], './setup_gui_ai.py', '../model.h5')
             MM.broadcast_config_update(self, global_game_manager, self.sockets)
         elif 'update_config' == message_type:
-            print('Walla')
             global_game_manager.define_rule(
                 int(js['max_round']), int(js['initial_stack']), int(js['small_blind']),
                 int(js['ante']), None
             )
             for i in range(1, int(js['ai_players']) - 1):
                 global_game_manager.join_ai_player('Player_' + str(i), './setup_gui_ai.py', '../model.h5')
+        elif 'assign_dealer' == message_type:
+            print(js['dealer_name'])
         elif 'action_start_game' == message_type:
             if global_game_manager.is_playing_poker:
                 MM.alert_server_restart(self, self.uuid, self.sockets)

@@ -2,12 +2,10 @@
   <td>{{ player["type"] }}</td>
   <td>{{ player["name"] }}</td>
   <td>
-      <form action="/a/assign" method="post" id="assign_dealer_form">
-          <p>
-              <label style="vertical-align: middle" for="assign_as_dealer"> Assign Dealer </label>
-              <input id="assign_as_dealer" type="radio" value="{{ player["name"] }}" name="is_dealer">
-          </p>
-      </form>
+    <p>
+        <label style="vertical-align: middle" for="assign_as_dealer"> Assign Dealer </label>
+        <input type="radio" value="{{ player["name"] }}" name="dealer_name">
+    </p>
   </td>
 {#    {% if player.isDealer == False %}#}
 {#        <input id="assign_as_dealer" type="radio" name="Status" value="{{ _('isDealer') }}" class="inactive" > Assign Dealer </input>#}

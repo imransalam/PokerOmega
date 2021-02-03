@@ -15,7 +15,7 @@ $(document).ready(function() {
         e.preventDefault();
     });
 
-    $(document).on('change', "#assign_as_dealer", function(e){
+    $(document).on('change', "[name='dealer_name']", function(e){
         assignDealer(e);
         e.preventDefault();
     });
@@ -48,25 +48,16 @@ let delay = ms => new Promise(r => setTimeout(r, ms));
  *  player is assigned as a dealer.
  */
 async function assignDealer(e) {
-    var message = $('#assign_dealer_form').formToDict();
-    // message['isDealer'] = e.target.checked;
-    // if(e.target.disabled){
-    //     // console.log(message['isDealer'] = $('#assign_as_dealer').val());
-    //     console.log('xya');
-    // }
+    var message = { };
+    message['type'] = "assign_dealer";
+    message['dealer_name'] = e.target.value;
     console.log(e.target.value)
-        // $('#is_dealer').val();
-    // const xyz = e.target.checked;
-    // debugger;
-    // if(updater.sockets[updater.sockets.length - 1].readyState === 1) {
-    //     isDealer == True
-    // }
-    // if(updater.sockets[0]){
-    //     alert('Assign a Dealer');
-    // }
-    // else{
-    //
-    // }
+
+    if (!updater.sockets[0]) {
+        alert('Add one human player to assign dealer.')
+        return ;
+    }
+    updater.sockets[0].send(JSON.stringify(message));
 }
 
 /*
@@ -111,15 +102,10 @@ function updateConfig() {
  * game is started.
  */
 async function startGame() {
-    console.log("Start Game")
-    message = {}
-    message['type'] = "action_start_game"
-    if ($('#assign_as_dealer').val() === False) {
-        alert('No dealer is assigned.')
-        return;
-    }else{
-        return;
-    }
+    console.log("Start Game");
+    message = {};
+    message['type'] = "action_start_game";
+
     if (!updater.sockets[0]) {
         alert('No Human Player is added');
         return;
