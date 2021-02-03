@@ -53,9 +53,10 @@ class GameManager(object):
         self.hand_info_uuids = []
 
     def stop_game(self):
-        uuid_list = None
-        name_list = None
-        players_info = None
+        print('yahan aata hai')
+        self.uuid_list = None
+        self.name_list = None
+        self.players_info = None
         self.ai_players = None
         self.engine = None
         self.latest_messages = None

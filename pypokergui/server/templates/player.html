@@ -1,5 +1,16 @@
-<tr>
+<tr xmlns="http://www.w3.org/1999/html">
   <td>{{ player["type"] }}</td>
   <td>{{ player["name"] }}</td>
-  <td>{{ player["isDealer"] }}</td>
+  <td>
+      <form action="/a/assign" method="post" id="assign_dealer_form">
+          <p>
+              <label style="vertical-align: middle" for="assign_as_dealer"> Assign Dealer </label>
+              <input id="assign_as_dealer" type="radio" value="{{ player["name"] }}" name="is_dealer">
+          </p>
+      </form>
+  </td>
+{#    {% if player.isDealer == False %}#}
+{#        <input id="assign_as_dealer" type="radio" name="Status" value="{{ _('isDealer') }}" class="inactive" > Assign Dealer </input>#}
+{#    {% endif %}#}
+{#  <td>{{ player["isDealer"] }}</td>#}
 </tr>

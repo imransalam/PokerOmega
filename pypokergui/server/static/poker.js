@@ -15,8 +15,8 @@ $(document).ready(function() {
         e.preventDefault();
     });
 
-    $(document).on('click', "#assign_as_dealer", function(e){
-        assignDealer();
+    $(document).on('change', "#assign_as_dealer", function(e){
+        assignDealer(e);
         e.preventDefault();
     });
 
@@ -47,15 +47,33 @@ let delay = ms => new Promise(r => setTimeout(r, ms));
  *  Callback function invoked when
  *  player is assigned as a dealer.
  */
-async function assignDealer(){
-
+async function assignDealer(e) {
+    var message = $('#assign_dealer_form').formToDict();
+    // message['isDealer'] = e.target.checked;
+    // if(e.target.disabled){
+    //     // console.log(message['isDealer'] = $('#assign_as_dealer').val());
+    //     console.log('xya');
+    // }
+    console.log(e.target.value)
+        // $('#is_dealer').val();
+    // const xyz = e.target.checked;
+    // debugger;
+    // if(updater.sockets[updater.sockets.length - 1].readyState === 1) {
+    //     isDealer == True
+    // }
+    // if(updater.sockets[0]){
+    //     alert('Assign a Dealer');
+    // }
+    // else{
+    //
+    // }
 }
 
 /*
  *  Callback function invoked when
  *  human player is registered.
  */
-async function registerPlayer() {
+async function registerPlayer(e) {
     var message = $('#registration_form').formToDict();
     message['type'] = "action_new_member"
     message['name'] = $('#player_name').val();
@@ -63,7 +81,7 @@ async function registerPlayer() {
     delete message.body
     updater.start(message['name']);
     while (updater.sockets[updater.sockets.length - 1].readyState === 0) {
-        await delay(1000 * 1)
+        await delay(1000)
     }
     updater.sockets[updater.sockets.length - 1].send(JSON.stringify(message));
 }
@@ -90,15 +108,21 @@ function updateConfig() {
 
 /*
  * Callback function invoked when
- * game is starged.
+ * game is started.
  */
 async function startGame() {
     console.log("Start Game")
     message = {}
     message['type'] = "action_start_game"
+    if ($('#assign_as_dealer').val() === False) {
+        alert('No dealer is assigned.')
+        return;
+    }else{
+        return;
+    }
     if (!updater.sockets[0]) {
         alert('No Human Player is added');
-        return ;
+        return;
     }
     updater.sockets[0].send(JSON.stringify(message));
 }
@@ -116,7 +140,6 @@ function restartGame() {
  * human player declared his action in the game.
  */
 const declareAction = (form, socket, socketNumber) => {
-    debugger;
   console.log("Declare Action")
   var message = form.formToDict();
   message['type'] = "action_declare_action";
