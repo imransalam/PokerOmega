@@ -55,7 +55,7 @@ async function assignDealer(e) {
 
     if (!updater.sockets[0]) {
         alert('Add one human player to assign dealer.')
-        return ;
+        return;
     }
     updater.sockets[0].send(JSON.stringify(message));
 }
@@ -105,6 +105,12 @@ async function startGame() {
     console.log("Start Game");
     message = {};
     message['type'] = "action_start_game";
+    // message['dealer_name'] = e.target.value;
+    //
+    // if(e.target.value === ""){
+    //     alert('Assign a Dealer to continue');
+    //     return;
+    // }
 
     if (!updater.sockets[0]) {
         alert('No Human Player is added');

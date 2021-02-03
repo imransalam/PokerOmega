@@ -84,6 +84,15 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
                 global_game_manager.join_ai_player('Player_' + str(i), './setup_gui_ai.py', '../model.h5')
         elif 'assign_dealer' == message_type:
             print(js['dealer_name'])
+            index = -1
+
+            for i, player_info in enumerate(global_game_manager.members_info):
+                if player_info['name'] == js['dealer_name']:
+                    index = i
+                    global_game_manager.members_info[i]['isDealer'] = True
+            print(index)
+
+
         elif 'action_start_game' == message_type:
             if global_game_manager.is_playing_poker:
                 MM.alert_server_restart(self, self.uuid, self.sockets)
