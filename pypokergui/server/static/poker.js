@@ -20,6 +20,11 @@ $(document).ready(function() {
         e.preventDefault();
     });
 
+    $(document).on('change', "[name='next_player']", function(e){
+        assignNextPlayer(e);
+        e.preventDefault();
+    });
+
     $("#start_game_form").on("submit", function() {
         startGame()
         return false;
@@ -55,6 +60,23 @@ async function assignDealer(e) {
 
     if (!updater.sockets[0]) {
         alert('Add one human player to assign dealer.')
+        return;
+    }
+    updater.sockets[0].send(JSON.stringify(message));
+}
+
+/*
+ *  Callback function invoked when
+ *  next player is assigned
+ */
+async function assignNextPlayer(e) {
+    var message = { };
+    message['type'] = "assign_next_player";
+    message['player_name'] = e.target.value;
+    console.log(e.target.value)
+
+    if (!updater.sockets[0]) {
+        alert('Add one human player to select turn.')
         return;
     }
     updater.sockets[0].send(JSON.stringify(message));
@@ -123,7 +145,8 @@ function restartGame() {
     console.log("Restart Game")
     message = {}
     message['type'] = "action_restart_game"
-    updater.sockets[1].send(JSON.stringify(message));
+    updater.sockets[0].send(JSON.stringify(message));
+    debugger;
     location.reload()
 }
 
@@ -221,6 +244,7 @@ var updater = {
           return false;
       });
       $("#restart_game_form").on("submit", function() {
+          debugger;
           restartGame()
           return false;
       });
