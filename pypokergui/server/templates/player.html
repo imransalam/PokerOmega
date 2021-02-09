@@ -3,8 +3,12 @@
   <td>{{ player["name"] }}</td>
   <td>
     <p>
-        <label style="vertical-align: middle" for="assign_as_dealer"> Assign Dealer </label>
+        <label style="vertical-align: middle" for="assign_as_dealer">Assign Dealer</label>
         <input type="radio" value="{{ player["name"] }}" name="dealer_name">
+    </p>
+    <p>
+        <label style="vertical-align: middle" for="next_player">First Turn</label>
+        <input type="radio" value="{{ player["name"] }}" name="next_player">
     </p>
   </td>
 </tr>

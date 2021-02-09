@@ -8,7 +8,7 @@ from pypokerengine.engine.poker_constants import PokerConstants as Const
 
 class EngineWrapper(object):
 
-    def start_game(self, players_info, game_config):
+    def start_game(self, players_info, dealer_btn, next_player_index, game_config):
         self.config = game_config
         # setup table
         table = Table()
@@ -16,7 +16,7 @@ class EngineWrapper(object):
             player = Player(uuid, game_config['initial_stack'], name)
             table.seats.sitdown(player)
         # start the first round
-        state, msgs = self._start_new_round(1, game_config['blind_structure'], table)
+        state, msgs = self._start_new_round(1, game_config['blind_structure'], table, dealer_btn, next_player_index)
         self.current_state = state
         return _parse_broadcast_destination(msgs, self.current_state['table'])
 
@@ -29,16 +29,16 @@ class EngineWrapper(object):
         self.current_state = state
         return _parse_broadcast_destination(msgs, self.current_state['table'])
 
-    def _start_new_round(self, round_count, blind_structure, table):
+    def _start_new_round(self, round_count, blind_structure, table, dealer_btn, next_player_index):
         # adjust btn position to put btn of player-0 after table.shift_dealer_btn()
         # which will be called in self._start_next_round(...)
-        table.dealer_btn = len(table.seats.players)-1
-        return self._start_next_round(round_count, blind_structure, table)
+        table.dealer_btn = dealer_btn
+        return self._start_next_round(round_count, blind_structure, table, next_player_index)
 
-    def _start_next_round(self, round_count, blind_structure, table):
-        table.shift_dealer_btn()
+    def _start_next_round(self, round_count, blind_structure, table, next_player_index =-1):
+        # table.shift_dealer_btn()
         small_blind, ante = _get_forced_bet_amount(round_count, blind_structure)
-        table = _exclude_short_of_money_players(table, ante, small_blind)
+        table = _exclude_short_of_money_players(table, ante, small_blind, next_player_index)
         if self._has_game_finished(round_count, table, self.config['max_round']):
             finished_state = { 'table': table }
             game_result_msg = _gen_game_result_message(table, self.config)
@@ -82,18 +82,32 @@ def _get_forced_bet_amount(round_count, blind_structure):
     current_structure = blind_structure[current_level_key]
     return current_structure['small_blind'], current_structure['ante']
 
-def _exclude_short_of_money_players(table, ante, sb_amount):
-    sb_pos, bb_pos = _steal_money_from_poor_player(table, ante, sb_amount)
+def _exclude_short_of_money_players(table, ante, sb_amount, sb_fixed_position = -1):
+    sb_pos, bb_pos = _steal_money_from_poor_player(table, ante, sb_amount, sb_fixed_position)
+
     _disable_no_money_player(table.seats.players)
     table.set_blind_pos(sb_pos, bb_pos)
     if table.seats.players[table.dealer_btn].stack == 0: table.shift_dealer_btn()
     return table
 
-def _steal_money_from_poor_player(table, ante, sb_amount):
+def _steal_money_from_poor_player(table, ante, sb_amount, sb_fixed_position = -1):
     players = table.seats.players
     # exclude player who cannot pay ante
     for player in [p for p in players if p.stack < ante]: player.stack = 0
     if players[table.dealer_btn].stack == 0: table.shift_dealer_btn()
+
+    sb_relative_pos = -1
+    bb_relative_pos = -1
+    if sb_fixed_position > -1:
+        sb_player = players[sb_fixed_position]
+        bb_player_index = 0 if sb_fixed_position == len(players) - 1  else sb_fixed_position + 1
+        bb_player = players[bb_player_index]
+        if sb_player.stack >= sb_amount + ante: sb_relative_pos = sb_fixed_position
+        if bb_player.stack >= sb_amount*2 + ante: bb_relative_pos = bb_player_index
+
+        if sb_relative_pos != -1 and bb_relative_pos != -1:
+            return sb_relative_pos, bb_relative_pos
+
 
     search_targets = players + players + players
     search_targets = search_targets[table.dealer_btn+1:table.dealer_btn+1+len(players)]
@@ -104,11 +118,13 @@ def _steal_money_from_poor_player(table, ante, sb_amount):
     # exclude player who cannot pay big blind
     search_targets = search_targets[sb_relative_pos+1:sb_relative_pos+len(players)]
     bb_player = _find_first_elligible_player(search_targets, sb_amount*2 + ante, sb_player)
+
     if sb_player == bb_player:  # no one can pay big blind. So steal money from all players except small blind
         for player in [p for p in players if p!=bb_player]: player.stack = 0
     else:
         bb_relative_pos = search_targets.index(bb_player)
         for player in search_targets[:bb_relative_pos]: player.stack = 0
+
     return players.index(sb_player), players.index(bb_player)
 
 

@@ -90,9 +90,18 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
                 if player_info['name'] == js['dealer_name']:
                     index = i
                     global_game_manager.members_info[i]['isDealer'] = True
-            print(index)
+                else:
+                    global_game_manager.members_info[i]['isDealer'] = False
+        elif 'assign_next_player' == message_type:
+            print(js['player_name'])
+            index = -1
 
-
+            for i, player_info in enumerate(global_game_manager.members_info):
+                if player_info['name'] == js['player_name']:
+                    index = i
+                    global_game_manager.members_info[i]['next_player'] = True
+                else:
+                    global_game_manager.members_info[i]['next_player'] = False
         elif 'action_start_game' == message_type:
             if global_game_manager.is_playing_poker:
                 MM.alert_server_restart(self, self.uuid, self.sockets)

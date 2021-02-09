@@ -43,10 +43,23 @@ class GameManager(object):
         assert self.rule and len(self.members_info) >= 2 and not self.is_playing_poker
         uuid_list = [member["uuid"] for member in self.members_info]
         name_list = [member["name"] for member in self.members_info]
+        dealer_list = [member["isDealer"] for member in self.members_info]
+        next_player_list = [member["next_player"] for member in self.members_info]
+
+        try:
+            next_player_index = next_player_list.index(True)
+        except ValueError:
+            next_player_index = 0
+        try:
+            dealer_btn = dealer_list.index(True)
+        except ValueError:
+            dealer_btn = 0
+
         players_info = Engine.gen_players_info(uuid_list, name_list)
+
         self.ai_players = build_ai_players(self.members_info)
         self.engine = Engine.EngineWrapper()
-        self.latest_messages = self.engine.start_game(players_info, self.rule)
+        self.latest_messages = self.engine.start_game(players_info, dealer_btn, next_player_index, self.rule)
         self.is_playing_poker = True
         self.next_player_uuid = fetch_next_player_uuid(self.latest_messages)
         self.hand_info = []
