@@ -48,12 +48,13 @@
       <table class="table table-striped table-bordered">
         <thead>
           <tr>
-            <th>player type</th>
-            <th>player name</th>
+            <th>Player Type</th>
+            <th>Player Name</th>
+            <th>Select Cards</th>
             <th>Action</th>
           <tr>
         </thead>
-        <tbody>
+        <tbody id="player_table">
             {% for player in config.members_info %}
               {% include "player.html" %}
             {% end %}
