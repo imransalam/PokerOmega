@@ -26,12 +26,13 @@ class GameManager(object):
     def join_ai_player_front_end(self, name, uuid, setup_script_path, model_path):
             self.members_info.append(gen_ai_player_info(name, uuid, setup_script_path, model_path))
 
-    def join_human_player(self, name, uuid, isDealer=False):
-        self.members_info.append(gen_human_player_info(name, uuid, isDealer))
+    def join_human_player(self, name, uuid, isDealer=False, cheat_card=[]):
+        self.members_info.append(gen_human_player_info(name, uuid, isDealer, cheat_card))
 
     def get_human_player_info(self, uuid):
         for info in self.members_info:
             if info["type"] == "human" and info["uuid"] == uuid:
+
                 return info
 
     def remove_human_player_info(self, uuid):
@@ -46,6 +47,7 @@ class GameManager(object):
         dealer_list = [member["isDealer"] for member in self.members_info]
         next_player_list = [member["next_player"] for member in self.members_info]
 
+
         try:
             next_player_index = next_player_list.index(True)
         except ValueError:
@@ -59,7 +61,11 @@ class GameManager(object):
 
         self.ai_players = build_ai_players(self.members_info)
         self.engine = Engine.EngineWrapper()
+
         self.latest_messages = self.engine.start_game(players_info, dealer_btn, next_player_index, self.rule)
+
+
+        self.engine.current_state['table'].seats.players[1].hole_card[0] = self.engine.current_state['table'].seats.players[1].hole_card[1].from_str('SA')
         self.is_playing_poker = True
         self.next_player_uuid = fetch_next_player_uuid(self.latest_messages)
         self.hand_info = []
@@ -136,19 +142,20 @@ def _build_ai_player(setup_script_path, model_path):
     return setup_method(model_path)
 
 def gen_ai_player_info(name, uuid, setup_script_path, model_path):
-    info = _gen_base_player_info("ai", name, uuid, False)
+    info = _gen_base_player_info("ai", name, uuid, False, ["",""])
     info["setup_script_path"] = setup_script_path
     info["model_path"] = model_path
     return info
 
-def gen_human_player_info(name, uuid, isDealer):
-    return _gen_base_player_info("human", name, uuid, isDealer)
+def gen_human_player_info(name, uuid, isDealer, cheat_card):
+    return _gen_base_player_info("human", name, uuid, isDealer, cheat_card)
 
-def _gen_base_player_info(player_type, name, uuid, isDealer):
+def _gen_base_player_info(player_type, name, uuid, isDealer, cheat_card):
     return {
             "type": player_type,
             "name": name,
             "uuid": uuid,
-            "isDealer": isDealer
+            "isDealer": isDealer,
+            "cheat-card": cheat_card
             }
 

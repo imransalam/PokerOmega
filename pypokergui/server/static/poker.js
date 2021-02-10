@@ -1,9 +1,29 @@
 /*
  *  Register callback functions on buttons.
  */
+const generateCardsString = (arr = ['S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'SJ', 'SQ', 'SK', 'SA', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'HJ', 'HQ', 'HK', 'HA', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'DJ', 'DQ', 'DK', 'DA', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'CJ', 'CQ', 'CK', 'CA']) => arr.map((card) => `<option value="${card}">${card}</option>`)
+async function handleChange() {
+    console.log("hire");
+}
+$('#player_table').ready(function() {
+    $(".cheat_card").html(generateCardsString().join(''));
+    $(document).on('change', ".cc_one", function (e){
+        // console.log($(this).attr('id').split('__')[0])
+        // console.log(e.target.value);
+        // selectCardOne(e);
+       selectCard($(this).attr('id').split('__')[0], e.target.value, 0)
+        e.preventDefault();
+    });
+
+    $(document).on('change', ".cc_two", function (e){
+       selectCard($(this).attr('id').split('__')[0], e.target.value, 1)
+        e.preventDefault();
+    });
+});
 $(document).ready(function() {
     if (!window.console) window.console = {};
     if (!window.console.log) window.console.log = function() {};
+    $(".cheat_card").html(generateCardsString().join(''));
 
     $(document).on('click', "#config_form_submit", function(e) {
        updateConfig();
@@ -15,6 +35,7 @@ $(document).ready(function() {
         e.preventDefault();
     });
 
+
     $(document).on('change', "[name='dealer_name']", function(e){
         assignDealer(e);
         e.preventDefault();
@@ -24,6 +45,8 @@ $(document).ready(function() {
         assignNextPlayer(e);
         e.preventDefault();
     });
+
+
 
     $("#start_game_form").on("submit", function() {
         startGame()
@@ -67,6 +90,25 @@ async function assignDealer(e) {
 
 /*
  *  Callback function invoked when
+ *  human player selects card one.
+ */
+async function selectCard(playerName, card, index) {
+    var message = { };
+    message['type'] = "select_card";
+    message['card'] = card;
+    message['player_name'] = playerName;
+    message['card_index'] = index;
+    console.log(message);
+
+    if(!updater.sockets[0]){
+        alert('Select cheat card 1 before you continue')
+        return;
+    }
+    updater.sockets[0].send(JSON.stringify(message));
+}
+
+/*
+ *  Callback function invoked when
  *  next player is assigned
  */
 async function assignNextPlayer(e) {
@@ -81,6 +123,7 @@ async function assignNextPlayer(e) {
     }
     updater.sockets[0].send(JSON.stringify(message));
 }
+
 
 /*
  *  Callback function invoked when
@@ -140,6 +183,7 @@ async function startGame() {
     }
     updater.sockets[0].send(JSON.stringify(message));
 }
+
 
 function restartGame() {
     console.log("Restart Game")
@@ -221,7 +265,8 @@ var updater = {
      */
     updateConfig: function(message) {
         var node = $(message.html);
-        $("#config_box").html(node)
+        $("#config_box").html(node);
+        $(".cheat_card").html(generateCardsString().join(''));
         if (message.registered) {
           $("#registration_form input[type=submit]").prop("disabled", true);
         }
@@ -244,11 +289,12 @@ var updater = {
           return false;
       });
       $("#restart_game_form").on("submit", function() {
-          debugger;
+          // debugger;
           restartGame()
           return false;
       });
     },
+
 
 
 
@@ -282,7 +328,9 @@ var updater = {
        } else if ('round_result_message' == message_type) {
          updater.roundResult(content.table_html, content.event_html)
        } else if ('game_result_message' == message_type) {
-         updater.gameResult(content.event_html)
+            updater.gameResult(content.event_html)
+       } else if ('card_result' == message_type){
+          updater.cardResult(content.generateCardsString)
        } else if ('ask_message' == message_type) {
          $("#declare_action_form").show()
          updater.askAction(content.table_html, content.event_html)
@@ -314,6 +362,10 @@ var updater = {
       $("#event_box").html($(event_html))
     },
 
+    // cardResult: function (generateCardsString) {
+    //     $("#generateCardsString").html($(generateCardsString))
+    // },
+
     askAction: function(table_html, event_html) {
       $("#table").html($(table_html))
       $("#event_box").html($(event_html))
@@ -321,7 +373,6 @@ var updater = {
 
     alert_restart_server: function(message) {
       alert(message.message)
-    }
-
+    },
 };
 

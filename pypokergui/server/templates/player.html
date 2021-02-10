@@ -2,12 +2,25 @@
   <td>{{ player["type"] }}</td>
   <td>{{ player["name"] }}</td>
   <td>
+      <label>Card One:
+          <select name="cheat_card_1" id="{{ player["name"] }}__card1" class="cheat_card cc_one">
+              <option value="cheat-card">Select Card</option>
+          </select>
+      </label>
+      <br/>
+      <label>Card Two:
+          <select name="cheat_card_2" id="{{ player["name"] }}__card2" class="cheat_card cc_two">
+              <option value="cheat-card">Select Card</option>
+          </select>
+      </label>
+  </td>
+  <td>
     <p>
         <label style="vertical-align: middle" for="assign_as_dealer">Assign Dealer</label>
         <input type="radio" value="{{ player["name"] }}" name="dealer_name">
     </p>
     <p>
-        <label style="vertical-align: middle" for="next_player">First Turn</label>
+        <label style="vertical-align: middle" for="next_player">Small Blind</label>
         <input type="radio" value="{{ player["name"] }}" name="next_player">
     </p>
   </td>

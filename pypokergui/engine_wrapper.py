@@ -15,8 +15,12 @@ class EngineWrapper(object):
         for uuid, name in players_info.items():
             player = Player(uuid, game_config['initial_stack'], name)
             table.seats.sitdown(player)
+
         # start the first round
         state, msgs = self._start_new_round(1, game_config['blind_structure'], table, dealer_btn, next_player_index)
+        # self.engine.current_state['table'].seats.players[1].hole_card[1]['suit'] = self.engine.current_state['table'].seats.players[1].hole_card[1].from_str('SA')
+        msgs[1][1]['message']['hole_card'][0] = 'SA'
+        msgs[3][1]['message']['hole_card'][0] = 'SA'
         self.current_state = state
         return _parse_broadcast_destination(msgs, self.current_state['table'])
 
