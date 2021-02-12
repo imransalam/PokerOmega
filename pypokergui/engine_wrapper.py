@@ -1,6 +1,7 @@
 from collections import OrderedDict
-
+import json
 from pypokerengine.engine.table import Table
+from pypokerengine.engine.card import Card
 from pypokerengine.engine.player import Player
 from pypokerengine.engine.round_manager import RoundManager
 from pypokerengine.engine.message_builder import MessageBuilder
@@ -8,19 +9,39 @@ from pypokerengine.engine.poker_constants import PokerConstants as Const
 
 class EngineWrapper(object):
 
+    def __init__(self, flag):
+        self.flag = flag
+
     def start_game(self, players_info, dealer_btn, next_player_index, game_config):
+        f = open('game_manager.pkl', 'r')
+        members_info = json.load(f)
+        f.close()
         self.config = game_config
         # setup table
         table = Table()
+        card = Card('S', 8)
+
         for uuid, name in players_info.items():
             player = Player(uuid, game_config['initial_stack'], name)
             table.seats.sitdown(player)
 
-        # start the first round
-        state, msgs = self._start_new_round(1, game_config['blind_structure'], table, dealer_btn, next_player_index)
-        # self.engine.current_state['table'].seats.players[1].hole_card[1]['suit'] = self.engine.current_state['table'].seats.players[1].hole_card[1].from_str('SA')
-        msgs[1][1]['message']['hole_card'][0] = 'SA'
-        msgs[3][1]['message']['hole_card'][0] = 'SA'
+        if self.flag == False:
+            for i, player in enumerate(table.seats.players):
+                table.seats.players[i].add_holecard([card.from_str(members_info[i]['cheat_card'][0]), card.from_str(members_info[i]['cheat_card'][1])])
+
+        state, msgs = self._start_new_round(1, game_config['blind_structure'], table, dealer_btn, next_player_index, self.flag)
+
+        self.flag = True
+
+        for i, msg in enumerate(msgs):
+            msg = msg[1]
+            if msg['type'] == 'notification' and msg['message']['message_type'] == 'round_start_message' and msg['message']['round_count'] == 1:
+                # table.seats.players[i].hole_card.append(card.from_str(members_info[i]['cheat_card'][0]))
+                # table.seats.players[i].hole_card.append(card.from_str(members_info[i]['cheat_card'][1]))
+                msgs[i][1]['message']['hole_card'][0] = members_info[i]['cheat_card'][0]
+                msgs[i][1]['message']['hole_card'][1] = members_info[i]['cheat_card'][1]
+
+
         self.current_state = state
         return _parse_broadcast_destination(msgs, self.current_state['table'])
 
@@ -28,18 +49,18 @@ class EngineWrapper(object):
         state, msgs = RoundManager.apply_action(self.current_state, action, bet_amount)
         if state['street'] == Const.Street.FINISHED:
             state, new_msgs = self._start_next_round(
-                    state['round_count']+1, self.config['blind_structure'], state['table'])
+                    state['round_count']+1, self.config['blind_structure'], state['table'], self.flag)
             msgs += new_msgs
         self.current_state = state
         return _parse_broadcast_destination(msgs, self.current_state['table'])
 
-    def _start_new_round(self, round_count, blind_structure, table, dealer_btn, next_player_index):
+    def _start_new_round(self, round_count, blind_structure, table, dealer_btn, next_player_index, flag):
         # adjust btn position to put btn of player-0 after table.shift_dealer_btn()
         # which will be called in self._start_next_round(...)
         table.dealer_btn = dealer_btn
-        return self._start_next_round(round_count, blind_structure, table, next_player_index)
+        return self._start_next_round(round_count, blind_structure, table, flag, next_player_index)
 
-    def _start_next_round(self, round_count, blind_structure, table, next_player_index =-1):
+    def _start_next_round(self, round_count, blind_structure, table, flag, next_player_index =-1):
         # table.shift_dealer_btn()
         small_blind, ante = _get_forced_bet_amount(round_count, blind_structure)
         table = _exclude_short_of_money_players(table, ante, small_blind, next_player_index)
@@ -49,7 +70,7 @@ class EngineWrapper(object):
             msgs = _parse_broadcast_destination([game_result_msg], table)
             return finished_state, msgs
         else:
-            return RoundManager.start_new_round(round_count, small_blind, ante, table)
+            return RoundManager.start_new_round(round_count, small_blind, ante, table, flag)
 
     def _has_game_finished(self, round_count, table, max_round):
         is_final_round = round_count == max_round

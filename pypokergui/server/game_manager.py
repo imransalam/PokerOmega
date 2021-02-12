@@ -1,6 +1,6 @@
 import pypokergui.engine_wrapper as Engine
 import pypokergui.ai_generator as AG
-
+import json
 class GameManager(object):
 
     def __init__(self):
@@ -13,26 +13,24 @@ class GameManager(object):
         self.next_player_uuid = None
         self.hand_info = []
         self.hand_info_uuids = []
+        self.flag = False
 
     def define_rule(self, max_round, initial_stack, small_blind, ante, blind_structure):
         self.rule = Engine.gen_game_config(max_round, initial_stack, small_blind, ante, blind_structure)
-
-
 
     def join_ai_player(self, name, setup_script_path, model_path):
         ai_uuid = str(len(self.members_info))
         self.members_info.append(gen_ai_player_info(name, ai_uuid, setup_script_path, model_path))
 
-    def join_ai_player_front_end(self, name, uuid, setup_script_path, model_path):
-            self.members_info.append(gen_ai_player_info(name, uuid, setup_script_path, model_path))
+    # def join_ai_player_front_end(self, name, uuid, setup_script_path, model_path):
+    #         self.members_info.append(gen_ai_player_info(name, uuid, setup_script_path, model_path))
 
-    def join_human_player(self, name, uuid, isDealer=False, cheat_card=[]):
+    def join_human_player(self, name, uuid, cheat_card, isDealer=False):
         self.members_info.append(gen_human_player_info(name, uuid, isDealer, cheat_card))
 
     def get_human_player_info(self, uuid):
         for info in self.members_info:
             if info["type"] == "human" and info["uuid"] == uuid:
-
                 return info
 
     def remove_human_player_info(self, uuid):
@@ -41,12 +39,12 @@ class GameManager(object):
         self.members_info.remove(member_info)
 
     def start_game(self):
+
         assert self.rule and len(self.members_info) >= 2 and not self.is_playing_poker
         uuid_list = [member["uuid"] for member in self.members_info]
         name_list = [member["name"] for member in self.members_info]
         dealer_list = [member["isDealer"] for member in self.members_info]
         next_player_list = [member["next_player"] for member in self.members_info]
-
 
         try:
             next_player_index = next_player_list.index(True)
@@ -60,12 +58,11 @@ class GameManager(object):
         players_info = Engine.gen_players_info(uuid_list, name_list)
 
         self.ai_players = build_ai_players(self.members_info)
-        self.engine = Engine.EngineWrapper()
-
+        self.engine = Engine.EngineWrapper(self.flag)
+        self.flag = True
         self.latest_messages = self.engine.start_game(players_info, dealer_btn, next_player_index, self.rule)
 
 
-        self.engine.current_state['table'].seats.players[1].hole_card[0] = self.engine.current_state['table'].seats.players[1].hole_card[1].from_str('SA')
         self.is_playing_poker = True
         self.next_player_uuid = fetch_next_player_uuid(self.latest_messages)
         self.hand_info = []
@@ -156,6 +153,6 @@ def _gen_base_player_info(player_type, name, uuid, isDealer, cheat_card):
             "name": name,
             "uuid": uuid,
             "isDealer": isDealer,
-            "cheat-card": cheat_card
+            "cheat_card": cheat_card
             }
 

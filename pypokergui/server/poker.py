@@ -11,6 +11,7 @@ import tornado.ioloop
 import tornado.options
 import tornado.web
 import tornado.websocket
+import json
 from tornado.options import define, options
 
 import pypokerengine.utils.action_utils as AU
@@ -70,7 +71,7 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
             player_type = js['player_type']
             if player_type == 'human':
                 print('HUMAN_JOINED')
-                global_game_manager.join_human_player(js['name'], self.uuid)
+                global_game_manager.join_human_player(js['name'], self.uuid, ['',''])
             else:
                 print('AI_JOINED')
                 global_game_manager.join_ai_player(js['name'], './setup_gui_ai.py', '../model.h5')
@@ -84,36 +85,26 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
                 global_game_manager.join_ai_player('Player_' + str(i), './setup_gui_ai.py', '../model.h5')
         elif 'assign_dealer' == message_type:
             print(js['dealer_name'])
-            index = -1
-
             for i, player_info in enumerate(global_game_manager.members_info):
                 if player_info['name'] == js['dealer_name']:
-                    i = index
                     global_game_manager.members_info[i]['isDealer'] = True
                 else:
                     global_game_manager.members_info[i]['isDealer'] = False
         elif 'assign_next_player' == message_type:
             print(js['player_name'])
-            index = -1
-
             for i, player_info in enumerate(global_game_manager.members_info):
                 if player_info['name'] == js['player_name']:
-                    i = index
                     global_game_manager.members_info[i]['next_player'] = True
                 else:
                     global_game_manager.members_info[i]['next_player'] = False
 
         elif 'select_card' == message_type:
             print(js['player_name'])
-            index = -1
-
             for i, player_info in enumerate(global_game_manager.members_info):
                 if player_info['name'] == js['player_name']:
-                    i = index
-                    print('card',js['card'])
-                    print('global',global_game_manager.members_info[i]['cheat-card'])
-                    assign = global_game_manager.members_info[i]['cheat-card'][int(js['card_index'])]
-                    print(assign)
+                    card_index = js['card_index']
+                    card = js['card']
+                    global_game_manager.members_info[i]['cheat_card'][card_index] = card
 
         elif 'action_start_game' == message_type:
             if global_game_manager.is_playing_poker:
@@ -124,6 +115,7 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
                 MM.broadcast_update_game(self, global_game_manager, self.sockets, MODE_SPEED)
                 if self._is_next_player_ai(global_game_manager):
                     self._progress_the_game_till_human()
+
         elif 'action_restart_game' == message_type:
             print("ACTION RESTART GAME")
             global_game_manager.stop_game()
@@ -146,6 +138,9 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
                     self._progress_the_game_till_human()
         else:
             raise Exception("Unexpected message [ %r ] received" % message)
+        f = open('game_manager.pkl', 'w')
+        json.dump(global_game_manager.members_info, f)
+        f.close()
 
     def _correct_action(self, data):
         try:
@@ -156,6 +151,11 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
         next_player_pos = global_game_manager.engine.current_state["next_player"]
         sb_amount = global_game_manager.engine.current_state["small_blind_amount"]
         actions = AU.generate_legal_actions(players, next_player_pos, sb_amount)
+
+        # for i, player_info in enumerate(global_game_manager.members_info):
+            # global_game_manager.members_info[i]['cheat_card'][card_index] = card
+
+
 
         if data["action"] == "fold":
             data["amount"] = 0
@@ -184,6 +184,9 @@ class PokerWebSocketHandler(tornado.websocket.WebSocketHandler):
 
 MODE_SPEED = "moderate"
 global_game_manager = GM.GameManager()
+f = open('game_manager.pkl', 'w')
+json.dump(global_game_manager.members_info, f)
+f.close()
 
 def setup_config(config):
     global_game_manager.define_rule(
